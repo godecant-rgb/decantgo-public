@@ -351,10 +351,12 @@ export default function CatalogoPage() {
       {cartCount > 0 ? (
         <Link
           href="/carrito"
-          className="fixed bottom-24 right-5 z-50 flex items-center gap-3 rounded-full border border-[rgba(212,175,55,0.18)] bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-5 py-3 text-sm font-bold text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)] lg:hidden"
+          className="fixed bottom-24 right-5 z-50 flex items-center justify-center rounded-full border border-[rgba(212,175,55,0.18)] bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-3 py-3 text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:scale-[1.03]"
+          aria-label={`Ver carrito (${cartCount})`}
+          title={`Ver carrito (${cartCount})`}
         >
-          🛒 Ver carrito
-          <span className="rounded-full bg-black/20 px-2 py-1 text-xs text-white">
+          <span className="text-base">🛒</span>
+          <span className="absolute -right-1 -top-1 rounded-full bg-black px-1.5 py-0.5 text-[10px] font-bold text-white">
             {cartCount}
           </span>
         </Link>
