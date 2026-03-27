@@ -37,8 +37,6 @@ function genderBadgeClass(gender: string | null) {
 }
 
 export default function CatalogoPage() {
-  const supabase = createClient();
-
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -50,6 +48,8 @@ export default function CatalogoPage() {
 
   useEffect(() => {
     async function loadProducts() {
+      const supabase = createClient();
+
       const { data, error } = await supabase
         .from("public_products")
         .select("*")
@@ -69,7 +69,7 @@ export default function CatalogoPage() {
 
     loadProducts();
     setCartCount(getCartCount());
-  }, [supabase]);
+  }, []);
 
   const marcas = useMemo(() => {
     return Array.from(
