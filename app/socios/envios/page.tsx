@@ -82,8 +82,6 @@ function buildLabelHtml(order: OrderRow, shipping: ShippingRow | null) {
 }
 
 export default function SociosEnviosPage() {
-  const supabase = createClient();
-
   const [authorized, setAuthorized] = useState(false);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [shipping, setShipping] = useState<ShippingRow[]>([]);
@@ -103,31 +101,35 @@ export default function SociosEnviosPage() {
 
   useEffect(() => {
     if (!authorized) return;
-    loadData();
-  }, [authorized]);
 
-  async function loadData() {
-    setLoading(true);
-    const [ordersRes, shippingRes] = await Promise.all([
-      supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
-      supabase.from("shipping_addresses").select("*").order("created_at", { ascending: false }),
-    ]);
+    async function loadData() {
+      setLoading(true);
+      const supabase = createClient();
 
-    if (ordersRes.error) console.error("ENVIOS ORDERS ERROR:", ordersRes.error);
-    if (shippingRes.error) console.error("ENVIOS SHIPPING ERROR:", shippingRes.error);
+      const [ordersRes, shippingRes] = await Promise.all([
+        supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
+        supabase.from("shipping_addresses").select("*").order("created_at", { ascending: false }),
+      ]);
 
-    const loadedOrders = (ordersRes.data ?? []) as OrderRow[];
-    setOrders(loadedOrders);
-    setShipping((shippingRes.data ?? []) as ShippingRow[]);
+      if (ordersRes.error) console.error("ENVIOS ORDERS ERROR:", ordersRes.error);
+      if (shippingRes.error) console.error("ENVIOS SHIPPING ERROR:", shippingRes.error);
 
-    if (!selectedOrderId && loadedOrders.length > 0) {
-      setSelectedOrderId(loadedOrders[0].id);
+      const loadedOrders = (ordersRes.data ?? []) as OrderRow[];
+      setOrders(loadedOrders);
+      setShipping((shippingRes.data ?? []) as ShippingRow[]);
+
+      if (!selectedOrderId && loadedOrders.length > 0) {
+        setSelectedOrderId(loadedOrders[0].id);
+      }
+      setLoading(false);
     }
-    setLoading(false);
-  }
+
+    loadData();
+  }, [authorized, selectedOrderId]);
 
   async function updateStatus(orderId: string, newStatus: string) {
     setSavingId(orderId);
+    const supabase = createClient();
     const { error } = await supabase.from("public_orders").update({ status: newStatus }).eq("id", orderId);
 
     if (error) {
@@ -170,7 +172,6 @@ export default function SociosEnviosPage() {
             </div>
             <div className="flex gap-2">
               <Link href="/socios/dashboard" className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm">Volver</Link>
-              <button onClick={loadData} className="rounded-full bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-5 py-3 text-sm font-bold text-black">Actualizar</button>
             </div>
           </div>
 
@@ -191,7 +192,11 @@ export default function SociosEnviosPage() {
                     {filteredOrders.map((order) => {
                       const ship = shipping.find((s) => s.order_id === order.id) || null;
                       return (
-                        <button key={order.id} onClick={() => setSelectedOrderId(order.id)} className={`rounded-[20px] border p-4 text-left transition ${selectedOrderId === order.id ? "border-[#d4af37] bg-[rgba(212,175,55,0.08)]" : "border-[rgba(212,175,55,0.10)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(212,175,55,0.22)]"}`}>
+                        <button
+                          key={order.id}
+                          onClick={() => setSelectedOrderId(order.id)}
+                          className={`rounded-[20px] border p-4 text-left transition ${selectedOrderId === order.id ? "border-[#d4af37] bg-[rgba(212,175,55,0.08)]" : "border-[rgba(212,175,55,0.10)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(212,175,55,0.22)]"}`}
+                        >
                           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                             <div>
                               <div className="text-lg font-bold text-[#d4af37]">{order.order_number}</div>
@@ -238,9 +243,17 @@ export default function SociosEnviosPage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <button onClick={() => openPrintWindow(`Etiqueta ${selectedOrder.order_number}`, buildLabelHtml(selectedOrder, selectedShipping))} className="rounded-xl border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm font-medium text-[#f5e7c2] transition hover:border-[#d4af37]">Imprimir etiqueta</button>
-                    <button onClick={() => updateStatus(selectedOrder.id, "enviado")} className="rounded-xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-sm font-medium text-sky-300 transition hover:bg-sky-500/15">Marcar como enviado</button>
-                    <button onClick={() => updateStatus(selectedOrder.id, "entregado")} className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/15">Marcar como entregado</button>
+                    <button onClick={() => openPrintWindow(`Etiqueta ${selectedOrder.order_number}`, buildLabelHtml(selectedOrder, selectedShipping))} className="rounded-xl border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm font-medium text-[#f5e7c2] transition hover:border-[#d4af37]">
+                      Imprimir etiqueta
+                    </button>
+
+                    <button onClick={() => updateStatus(selectedOrder.id, "enviado")} className="rounded-xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-sm font-medium text-sky-300 transition hover:bg-sky-500/15">
+                      Marcar como enviado
+                    </button>
+
+                    <button onClick={() => updateStatus(selectedOrder.id, "entregado")} className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/15">
+                      Marcar como entregado
+                    </button>
                   </div>
                 </div>
               )}

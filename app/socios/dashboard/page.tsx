@@ -48,8 +48,6 @@ function statusBadge(status: string) {
 }
 
 export default function SociosDashboardPage() {
-  const supabase = createClient();
-
   const [user, setUser] = useState("");
   const [authorized, setAuthorized] = useState(false);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -69,24 +67,26 @@ export default function SociosDashboardPage() {
 
   useEffect(() => {
     if (!authorized) return;
+
+    async function loadData() {
+      setLoading(true);
+      const supabase = createClient();
+
+      const [ordersRes, itemsRes] = await Promise.all([
+        supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
+        supabase.from("public_order_items").select("*").order("created_at", { ascending: false }),
+      ]);
+
+      if (ordersRes.error) console.error("DASHBOARD ORDERS ERROR:", ordersRes.error);
+      if (itemsRes.error) console.error("DASHBOARD ITEMS ERROR:", itemsRes.error);
+
+      setOrders((ordersRes.data ?? []) as OrderRow[]);
+      setItems((itemsRes.data ?? []) as OrderItemRow[]);
+      setLoading(false);
+    }
+
     loadData();
   }, [authorized]);
-
-  async function loadData() {
-    setLoading(true);
-
-    const [ordersRes, itemsRes] = await Promise.all([
-      supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
-      supabase.from("public_order_items").select("*").order("created_at", { ascending: false }),
-    ]);
-
-    if (ordersRes.error) console.error("DASHBOARD ORDERS ERROR:", ordersRes.error);
-    if (itemsRes.error) console.error("DASHBOARD ITEMS ERROR:", itemsRes.error);
-
-    setOrders((ordersRes.data ?? []) as OrderRow[]);
-    setItems((itemsRes.data ?? []) as OrderItemRow[]);
-    setLoading(false);
-  }
 
   function logout() {
     localStorage.removeItem("dg_socios_auth");
@@ -165,9 +165,20 @@ export default function SociosDashboardPage() {
               <h1 className="mt-2 text-4xl font-bold text-[#d4af37]">Dashboard socios</h1>
               <p className="mt-2 text-sm text-[#d8c68f]">Bienvenido{user ? `, ${user}` : ""}. Resumen general del negocio.</p>
             </div>
+
             <div className="flex flex-wrap gap-2">
-              <button onClick={loadData} className="rounded-full bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-5 py-3 text-sm font-bold text-black">Actualizar</button>
-              <button onClick={logout} className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm">Cerrar sesión</button>
+              <button
+                onClick={() => window.location.reload()}
+                className="rounded-full bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-5 py-3 text-sm font-bold text-black"
+              >
+                Actualizar
+              </button>
+              <button
+                onClick={logout}
+                className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm"
+              >
+                Cerrar sesión
+              </button>
             </div>
           </div>
 
@@ -197,7 +208,11 @@ export default function SociosDashboardPage() {
                   ["Finanzas", "Control entre socios, gastos y resultados del negocio.", "/socios/finanzas"],
                   ["Envíos", "Preparar pedidos, generar etiqueta y despachar.", "/socios/envios"],
                 ].map(([title, text, href]) => (
-                  <Link key={title} href={href} className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(255,255,255,0.03)] p-6 transition hover:-translate-y-1 hover:border-[rgba(212,175,55,0.24)]">
+                  <Link
+                    key={title}
+                    href={href}
+                    className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(255,255,255,0.03)] p-6 transition hover:-translate-y-1 hover:border-[rgba(212,175,55,0.24)]"
+                  >
                     <h2 className="text-2xl font-bold text-[#d4af37]">{title}</h2>
                     <p className="mt-2 text-sm text-[#d8c68f]">{text}</p>
                   </Link>
@@ -208,8 +223,11 @@ export default function SociosDashboardPage() {
                 <div className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(255,255,255,0.03)] p-5">
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-2xl font-bold text-[#d4af37]">Últimos pedidos</h2>
-                    <Link href="/socios/pedidos" className="text-sm text-[#d8c68f] hover:text-[#d4af37]">Ver todos</Link>
+                    <Link href="/socios/pedidos" className="text-sm text-[#d8c68f] hover:text-[#d4af37]">
+                      Ver todos
+                    </Link>
                   </div>
+
                   <div className="mt-4 grid gap-3">
                     {latestOrders.length === 0 ? (
                       <div className="text-sm text-[#d8c68f]">Todavía no hay pedidos.</div>

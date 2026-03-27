@@ -46,8 +46,6 @@ const STATUS_OPTIONS = ["pendiente", "pagado", "cerrado"];
 const PAID_BY_OPTIONS = ["General", "Leo", "Luis", "Ambos"];
 
 export default function SociosFinanzasPage() {
-  const supabase = createClient();
-
   const [authorized, setAuthorized] = useState(false);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
@@ -75,24 +73,26 @@ export default function SociosFinanzasPage() {
 
   useEffect(() => {
     if (!authorized) return;
+
+    async function loadData() {
+      setLoading(true);
+      const supabase = createClient();
+
+      const [ordersRes, expensesRes] = await Promise.all([
+        supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
+        supabase.from("partner_expenses").select("*").order("expense_date", { ascending: false }).order("created_at", { ascending: false }),
+      ]);
+
+      if (ordersRes.error) console.error("FINANZAS ORDERS ERROR:", ordersRes.error);
+      if (expensesRes.error) console.error("FINANZAS EXPENSES ERROR:", expensesRes.error);
+
+      setOrders((ordersRes.data ?? []) as OrderRow[]);
+      setExpenses((expensesRes.data ?? []) as ExpenseRow[]);
+      setLoading(false);
+    }
+
     loadData();
   }, [authorized]);
-
-  async function loadData() {
-    setLoading(true);
-
-    const [ordersRes, expensesRes] = await Promise.all([
-      supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
-      supabase.from("partner_expenses").select("*").order("expense_date", { ascending: false }).order("created_at", { ascending: false }),
-    ]);
-
-    if (ordersRes.error) console.error("FINANZAS ORDERS ERROR:", ordersRes.error);
-    if (expensesRes.error) console.error("FINANZAS EXPENSES ERROR:", expensesRes.error);
-
-    setOrders((ordersRes.data ?? []) as OrderRow[]);
-    setExpenses((expensesRes.data ?? []) as ExpenseRow[]);
-    setLoading(false);
-  }
 
   function resetForm() {
     setEditingId(null);
@@ -120,6 +120,7 @@ export default function SociosFinanzasPage() {
     }
 
     setSavingExpense(true);
+    const supabase = createClient();
 
     const payload = {
       concept: concept.trim(),
@@ -149,8 +150,7 @@ export default function SociosFinanzasPage() {
     }
 
     resetForm();
-    await loadData();
-    setSavingExpense(false);
+    window.location.reload();
   }
 
   function editExpense(exp: ExpenseRow) {
@@ -166,6 +166,7 @@ export default function SociosFinanzasPage() {
   }
 
   async function quickCloseExpense(exp: ExpenseRow, who: string) {
+    const supabase = createClient();
     const { error } = await supabase
       .from("partner_expenses")
       .update({ status: "cerrado", paid_by: who })
@@ -177,15 +178,14 @@ export default function SociosFinanzasPage() {
       return;
     }
 
-    setExpenses((prev) =>
-      prev.map((g) => (g.id === exp.id ? { ...g, status: "cerrado", paid_by: who } : g))
-    );
+    setExpenses((prev) => prev.map((g) => (g.id === exp.id ? { ...g, status: "cerrado", paid_by: who } : g)));
   }
 
   async function deleteExpense(id: string) {
     const ok = window.confirm("¿Eliminar este gasto?");
     if (!ok) return;
 
+    const supabase = createClient();
     const { error } = await supabase.from("partner_expenses").delete().eq("id", id);
 
     if (error) {
@@ -210,40 +210,22 @@ export default function SociosFinanzasPage() {
     );
     const paidSales = paidLike.reduce((acc, o) => acc + Number(o.total ?? 0), 0);
 
-    const pendingAmount = orders
-      .filter((o) => (o.status || "").toLowerCase() === "pendiente")
-      .reduce((acc, o) => acc + Number(o.total ?? 0), 0);
-
-    const cancelledAmount = orders
-      .filter((o) => (o.status || "").toLowerCase() === "cancelado")
-      .reduce((acc, o) => acc + Number(o.total ?? 0), 0);
-
-    const deliveredAmount = orders
-      .filter((o) => (o.status || "").toLowerCase() === "entregado")
-      .reduce((acc, o) => acc + Number(o.total ?? 0), 0);
+    const pendingAmount = orders.filter((o) => (o.status || "").toLowerCase() === "pendiente").reduce((acc, o) => acc + Number(o.total ?? 0), 0);
+    const cancelledAmount = orders.filter((o) => (o.status || "").toLowerCase() === "cancelado").reduce((acc, o) => acc + Number(o.total ?? 0), 0);
+    const deliveredAmount = orders.filter((o) => (o.status || "").toLowerCase() === "entregado").reduce((acc, o) => acc + Number(o.total ?? 0), 0);
 
     const activeExpenses = expenses.filter((g) => (g.status || "pendiente") !== "cerrado");
     const totalExpenses = activeExpenses.reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
-    const closedTotal = expenses
-      .filter((g) => (g.status || "") === "cerrado")
-      .reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
+    const closedTotal = expenses.filter((g) => (g.status || "") === "cerrado").reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
 
     const netAfterExpenses = paidSales - totalExpenses;
 
-    const leoExpenses = activeExpenses
-      .filter((g) => (g.partner || "").toLowerCase() === "leo")
-      .reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
-
-    const luisExpenses = activeExpenses
-      .filter((g) => (g.partner || "").toLowerCase() === "luis")
-      .reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
-
-    const generalExpenses = activeExpenses
-      .filter((g) => {
-        const p = (g.partner || "").toLowerCase();
-        return p !== "leo" && p !== "luis";
-      })
-      .reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
+    const leoExpenses = activeExpenses.filter((g) => (g.partner || "").toLowerCase() === "leo").reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
+    const luisExpenses = activeExpenses.filter((g) => (g.partner || "").toLowerCase() === "luis").reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
+    const generalExpenses = activeExpenses.filter((g) => {
+      const p = (g.partner || "").toLowerCase();
+      return p !== "leo" && p !== "luis";
+    }).reduce((acc, g) => acc + Number(g.amount ?? 0), 0);
 
     return {
       grossSales,
@@ -279,9 +261,7 @@ export default function SociosFinanzasPage() {
       map.set(key, existing);
     }
 
-    return Array.from(map.values())
-      .map((m) => ({ ...m, net: m.sales - m.expenses }))
-      .sort((a, b) => b.key.localeCompare(a.key));
+    return Array.from(map.values()).map((m) => ({ ...m, net: m.sales - m.expenses })).sort((a, b) => b.key.localeCompare(a.key));
   }, [orders, expenses]);
 
   if (!authorized) return null;
@@ -297,12 +277,7 @@ export default function SociosFinanzasPage() {
               <p className="mt-2 text-sm text-[#d8c68f]">Resumen financiero con gastos editables y cierre de saldos.</p>
             </div>
             <div className="flex gap-2">
-              <Link href="/socios/dashboard" className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm">
-                Volver
-              </Link>
-              <button onClick={loadData} className="rounded-full bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-5 py-3 text-sm font-bold text-black">
-                Actualizar
-              </button>
+              <Link href="/socios/dashboard" className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm">Volver</Link>
             </div>
           </div>
 
@@ -445,18 +420,10 @@ export default function SociosFinanzasPage() {
                             </div>
 
                             <div className="grid gap-2 sm:grid-cols-4">
-                              <button onClick={() => editExpense(g)} className="rounded-lg border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs font-medium text-[#f5e7c2]">
-                                Editar
-                              </button>
-                              <button onClick={() => quickCloseExpense(g, "Leo")} className="rounded-lg border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs font-medium text-[#f5e7c2]">
-                                Cerró Leo
-                              </button>
-                              <button onClick={() => quickCloseExpense(g, "Luis")} className="rounded-lg border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs font-medium text-[#f5e7c2]">
-                                Cerró Luis
-                              </button>
-                              <button onClick={() => quickCloseExpense(g, "Ambos")} className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-300">
-                                Cerrado ambos
-                              </button>
+                              <button onClick={() => editExpense(g)} className="rounded-lg border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs font-medium text-[#f5e7c2]">Editar</button>
+                              <button onClick={() => quickCloseExpense(g, "Leo")} className="rounded-lg border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs font-medium text-[#f5e7c2]">Cerró Leo</button>
+                              <button onClick={() => quickCloseExpense(g, "Luis")} className="rounded-lg border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs font-medium text-[#f5e7c2]">Cerró Luis</button>
+                              <button onClick={() => quickCloseExpense(g, "Ambos")} className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-300">Cerrado ambos</button>
                             </div>
 
                             <div className="flex justify-end">

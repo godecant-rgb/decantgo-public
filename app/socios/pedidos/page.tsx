@@ -191,8 +191,6 @@ function buildLabelHtml(order: OrderRow, shipping: ShippingRow | null) {
 }
 
 export default function SociosPedidosPage() {
-  const supabase = createClient();
-
   const [authorized, setAuthorized] = useState(false);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [items, setItems] = useState<OrderItemRow[]>([]);
@@ -216,34 +214,38 @@ export default function SociosPedidosPage() {
 
   useEffect(() => {
     if (!authorized) return;
-    loadAll();
-  }, [authorized]);
 
-  async function loadAll() {
-    setLoading(true);
-    const [ordersRes, itemsRes, shippingRes] = await Promise.all([
-      supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
-      supabase.from("public_order_items").select("*").order("created_at", { ascending: true }),
-      supabase.from("shipping_addresses").select("*").order("created_at", { ascending: false }),
-    ]);
+    async function loadAll() {
+      setLoading(true);
+      const supabase = createClient();
 
-    if (ordersRes.error) console.error("ORDERS ERROR:", ordersRes.error);
-    if (itemsRes.error) console.error("ITEMS ERROR:", itemsRes.error);
-    if (shippingRes.error) console.error("SHIPPING ERROR:", shippingRes.error);
+      const [ordersRes, itemsRes, shippingRes] = await Promise.all([
+        supabase.from("public_orders").select("*").order("created_at", { ascending: false }),
+        supabase.from("public_order_items").select("*").order("created_at", { ascending: true }),
+        supabase.from("shipping_addresses").select("*").order("created_at", { ascending: false }),
+      ]);
 
-    const loadedOrders = (ordersRes.data ?? []) as OrderRow[];
-    setOrders(loadedOrders);
-    setItems((itemsRes.data ?? []) as OrderItemRow[]);
-    setShipping((shippingRes.data ?? []) as ShippingRow[]);
+      if (ordersRes.error) console.error("ORDERS ERROR:", ordersRes.error);
+      if (itemsRes.error) console.error("ITEMS ERROR:", itemsRes.error);
+      if (shippingRes.error) console.error("SHIPPING ERROR:", shippingRes.error);
 
-    if (!selectedOrderId && loadedOrders.length > 0) {
-      setSelectedOrderId(loadedOrders[0].id);
+      const loadedOrders = (ordersRes.data ?? []) as OrderRow[];
+      setOrders(loadedOrders);
+      setItems((itemsRes.data ?? []) as OrderItemRow[]);
+      setShipping((shippingRes.data ?? []) as ShippingRow[]);
+
+      if (!selectedOrderId && loadedOrders.length > 0) {
+        setSelectedOrderId(loadedOrders[0].id);
+      }
+      setLoading(false);
     }
-    setLoading(false);
-  }
+
+    loadAll();
+  }, [authorized, selectedOrderId]);
 
   async function updateStatus(orderId: string, newStatus: string) {
     setSavingId(orderId);
+    const supabase = createClient();
     const { error } = await supabase.from("public_orders").update({ status: newStatus }).eq("id", orderId);
 
     if (error) {
@@ -299,7 +301,6 @@ export default function SociosPedidosPage() {
             </div>
             <div className="flex gap-2">
               <Link href="/socios/dashboard" className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm">Volver</Link>
-              <button onClick={loadAll} className="rounded-full bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-5 py-3 text-sm font-bold text-black">Actualizar</button>
             </div>
           </div>
 
@@ -323,18 +324,24 @@ export default function SociosPedidosPage() {
                 ) : (
                   <div className="grid gap-3">
                     {filteredOrders.map((order) => (
-                      <button key={order.id} onClick={() => setSelectedOrderId(order.id)} className={`rounded-[20px] border p-4 text-left transition ${selectedOrderId === order.id ? "border-[#d4af37] bg-[rgba(212,175,55,0.08)]" : "border-[rgba(212,175,55,0.10)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(212,175,55,0.22)]"}`}>
+                      <button
+                        key={order.id}
+                        onClick={() => setSelectedOrderId(order.id)}
+                        className={`rounded-[20px] border p-4 text-left transition ${selectedOrderId === order.id ? "border-[#d4af37] bg-[rgba(212,175,55,0.08)]" : "border-[rgba(212,175,55,0.10)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(212,175,55,0.22)]"}`}
+                      >
                         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                           <div>
                             <div className="text-lg font-bold text-[#d4af37]">{order.order_number}</div>
                             <div className="mt-1 text-sm text-[#f5e7c2]">{order.customer_name}</div>
                             <div className="mt-1 text-xs text-[#cdbb7a]">{formatDate(order.created_at)}</div>
                           </div>
+
                           <div className="flex flex-col items-start gap-2 md:items-end">
                             <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusClasses(order.status)}`}>{order.status}</span>
                             <div className="text-sm font-semibold text-[#f5e7c2]">{formatMoney(order.total)}</div>
                           </div>
                         </div>
+
                         <div className="mt-3 grid gap-2 text-sm text-[#d8c68f] md:grid-cols-3">
                           <div>Tel: {order.phone || "-"}</div>
                           <div>IG: {order.instagram || "-"}</div>
@@ -368,7 +375,12 @@ export default function SociosPedidosPage() {
 
                   <div>
                     <label className="mb-2 block text-sm text-[#d8c68f]">Estado del pedido</label>
-                    <select value={selectedOrder.status} onChange={(e) => updateStatus(selectedOrder.id, e.target.value)} disabled={savingId === selectedOrder.id} className="w-full rounded-xl border border-[rgba(212,175,55,0.16)] bg-[#121212] px-4 py-3 text-white outline-none focus:border-[#d4af37]">
+                    <select
+                      value={selectedOrder.status}
+                      onChange={(e) => updateStatus(selectedOrder.id, e.target.value)}
+                      disabled={savingId === selectedOrder.id}
+                      className="w-full rounded-xl border border-[rgba(212,175,55,0.16)] bg-[#121212] px-4 py-3 text-white outline-none focus:border-[#d4af37]"
+                    >
                       {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
