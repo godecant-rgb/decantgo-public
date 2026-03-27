@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "../../src/lib/supabase/client";
 
 type Product = {
@@ -8,6 +8,7 @@ type Product = {
   perfume: string;
   marca: string | null;
   categoria: string | null;
+  genero: string | null;
   foto_url: string | null;
   precio_5ml: number | null;
   precio_10ml: number | null;
@@ -32,8 +33,17 @@ function badgeClass(cat: string | null) {
   return "border-white/10 bg-white/5 text-[#f5e7c2]";
 }
 
+function genderBadgeClass(gender: string | null) {
+  const g = (gender || "").toLowerCase();
+  if (g === "hombre") return "border-blue-500/20 bg-blue-500/10 text-blue-300";
+  if (g === "mujer") return "border-pink-500/20 bg-pink-500/10 text-pink-300";
+  if (g === "unisex") return "border-violet-500/20 bg-violet-500/10 text-violet-300";
+  return "border-white/10 bg-white/5 text-[#f5e7c2]";
+}
+
 export default function CatalogoPage() {
   const supabase = createClient();
+  const cartRef = useRef<HTMLElement | null>(null);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +51,7 @@ export default function CatalogoPage() {
   const [search, setSearch] = useState("");
   const [selectedMarca, setSelectedMarca] = useState("todas");
   const [selectedCategoria, setSelectedCategoria] = useState("todas");
+  const [selectedGenero, setSelectedGenero] = useState("todos");
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [instagram, setInstagram] = useState("");
@@ -48,6 +59,7 @@ export default function CatalogoPage() {
   const [address, setAddress] = useState("");
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
+  const [addedMessage, setAddedMessage] = useState("");
 
   useEffect(() => {
     async function loadProducts() {
@@ -69,7 +81,7 @@ export default function CatalogoPage() {
     }
 
     loadProducts();
-  }, []);
+  }, [supabase]);
 
   const marcas = useMemo(() => {
     return Array.from(
@@ -83,13 +95,19 @@ export default function CatalogoPage() {
     ).sort((a, b) => a.localeCompare(b));
   }, [products]);
 
+  const generos = useMemo(() => {
+    return Array.from(
+      new Set(products.map((p) => (p.genero || "").trim()).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
 
     return products.filter((p) => {
       const matchesSearch =
         !q ||
-        [p.perfume, p.marca ?? "", p.categoria ?? ""]
+        [p.perfume, p.marca ?? "", p.categoria ?? "", p.genero ?? ""]
           .join(" ")
           .toLowerCase()
           .includes(q);
@@ -100,12 +118,20 @@ export default function CatalogoPage() {
       const matchesCategoria =
         selectedCategoria === "todas" || (p.categoria ?? "") === selectedCategoria;
 
-      return matchesSearch && matchesMarca && matchesCategoria;
+      const matchesGenero =
+        selectedGenero === "todos" || (p.genero ?? "") === selectedGenero;
+
+      return matchesSearch && matchesMarca && matchesCategoria && matchesGenero;
     });
-  }, [products, search, selectedMarca, selectedCategoria]);
+  }, [products, search, selectedMarca, selectedCategoria, selectedGenero]);
 
   const total = useMemo(
     () => cart.reduce((acc, item) => acc + item.precio * item.cantidad, 0),
+    [cart]
+  );
+
+  const cartCount = useMemo(
+    () => cart.reduce((acc, item) => acc + item.cantidad, 0),
     [cart]
   );
 
@@ -131,6 +157,12 @@ export default function CatalogoPage() {
 
       return [...prev, { product, presentacion, cantidad: 1, precio }];
     });
+
+    setAddedMessage(`${product.perfume} ${presentacion} agregado al carrito`);
+
+    setTimeout(() => {
+      setAddedMessage("");
+    }, 1800);
   }
 
   function changeQty(index: number, qty: number) {
@@ -293,7 +325,7 @@ export default function CatalogoPage() {
         <div className="grid gap-6 lg:grid-cols-[1.7fr_0.9fr]">
           <section>
             <div className="mb-5 rounded-2xl border border-[rgba(212,175,55,0.12)] bg-[rgba(18,18,18,0.88)] p-4">
-              <div className="grid gap-3 xl:grid-cols-[1fr_220px_220px]">
+              <div className="grid gap-3 xl:grid-cols-4">
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -308,7 +340,9 @@ export default function CatalogoPage() {
                 >
                   <option value="todas">Todas las marcas</option>
                   {marcas.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
                   ))}
                 </select>
 
@@ -319,11 +353,32 @@ export default function CatalogoPage() {
                 >
                   <option value="todas">Todas las categorías</option>
                   {categorias.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={selectedGenero}
+                  onChange={(e) => setSelectedGenero(e.target.value)}
+                  className="rounded-xl border border-[rgba(212,175,55,0.16)] bg-[#121212] px-4 py-3 text-white outline-none focus:border-[#d4af37]"
+                >
+                  <option value="todos">Todos los géneros</option>
+                  {generos.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
+
+            {addedMessage ? (
+              <div className="mb-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 lg:hidden">
+                {addedMessage}
+              </div>
+            ) : null}
 
             {loading ? (
               <div className="rounded-2xl border border-[rgba(212,175,55,0.12)] bg-[rgba(17,17,17,0.86)] p-6">
@@ -363,9 +418,22 @@ export default function CatalogoPage() {
                         <p className="mt-1 text-sm text-[#d8c68f]">
                           {p.marca ?? "Sin marca"}
                         </p>
-                        <div className="mt-2">
-                          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${badgeClass(p.categoria)}`}>
+
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${badgeClass(
+                              p.categoria
+                            )}`}
+                          >
                             {p.categoria ?? "Sin categoría"}
+                          </span>
+
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${genderBadgeClass(
+                              p.genero
+                            )}`}
+                          >
+                            {p.genero ?? "Sin género"}
                           </span>
                         </div>
                       </div>
@@ -373,13 +441,19 @@ export default function CatalogoPage() {
                       <div className="mb-3 grid gap-2 text-sm">
                         {p.precio_5ml ? (
                           <div className="rounded-xl border border-[rgba(212,175,55,0.12)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[#f5e7c2]">
-                            5 ml: <span className="font-semibold text-[#d4af37]">{formatPrice(p.precio_5ml)}</span>
+                            5 ml:{" "}
+                            <span className="font-semibold text-[#d4af37]">
+                              {formatPrice(p.precio_5ml)}
+                            </span>
                           </div>
                         ) : null}
 
                         {p.precio_10ml ? (
                           <div className="rounded-xl border border-[rgba(212,175,55,0.12)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[#f5e7c2]">
-                            10 ml: <span className="font-semibold text-[#d4af37]">{formatPrice(p.precio_10ml)}</span>
+                            10 ml:{" "}
+                            <span className="font-semibold text-[#d4af37]">
+                              {formatPrice(p.precio_10ml)}
+                            </span>
                           </div>
                         ) : null}
                       </div>
@@ -411,12 +485,21 @@ export default function CatalogoPage() {
           </section>
 
           <aside
+            ref={cartRef}
             id="pedido"
             className="top-24 h-fit rounded-[24px] border border-[rgba(212,175,55,0.18)] bg-[rgba(16,16,16,0.95)] p-5 shadow-[0_12px_30px_rgba(0,0,0,0.22)] lg:sticky"
           >
-            <h2 className="mb-4 text-2xl font-bold text-[#d4af37]">
-              Tu pedido
-            </h2>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-2xl font-bold text-[#d4af37]">
+                Tu pedido ({cartCount})
+              </h2>
+            </div>
+
+            {addedMessage ? (
+              <div className="mb-4 hidden rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 lg:block">
+                {addedMessage}
+              </div>
+            ) : null}
 
             {cart.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[rgba(212,175,55,0.18)] px-4 py-6 text-sm text-[#cbb97b]">
@@ -509,6 +592,20 @@ export default function CatalogoPage() {
           </aside>
         </div>
       </div>
+
+      {cartCount > 0 ? (
+        <button
+          onClick={() =>
+            cartRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
+          className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[rgba(212,175,55,0.18)] bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-5 py-3 text-sm font-bold text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)] lg:hidden"
+        >
+          🛒 Ver carrito
+          <span className="rounded-full bg-black/20 px-2 py-1 text-xs text-white">
+            {cartCount}
+          </span>
+        </button>
+      ) : null}
     </main>
   );
 }
