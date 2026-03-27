@@ -8,7 +8,6 @@ import {
   clearCart,
   getCart,
   removeCartItem,
-  saveCart,
   updateCartItemQuantity,
 } from "../../src/lib/cart";
 
@@ -17,8 +16,6 @@ function formatPrice(v: number | null | undefined) {
 }
 
 export default function CarritoPage() {
-  const supabase = createClient();
-
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -64,6 +61,8 @@ export default function CarritoPage() {
       alert("Tu carrito está vacío.");
       return;
     }
+
+    const supabase = createClient();
 
     const orderNumber = `DG-${new Date().getFullYear()}-${Date.now()}-${Math.floor(
       Math.random() * 1000
