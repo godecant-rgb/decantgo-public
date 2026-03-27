@@ -9,6 +9,8 @@ type Product = {
   perfume: string;
   marca: string | null;
   categoria: string | null;
+  genero: string | null;
+  perfil: string | null;
   foto_url: string | null;
   precio_5ml: number | null;
   precio_10ml: number | null;
@@ -23,11 +25,7 @@ function badgeClass(cat: string | null) {
   const c = (cat || "").toLowerCase();
   if (c.includes("dise")) return "border-sky-500/20 bg-sky-500/10 text-sky-300";
   if (c.includes("arab")) return "border-amber-500/20 bg-amber-500/10 text-amber-300";
-<<<<<<< HEAD
   return "border-[rgba(223,190,86,0.14)] bg-[rgba(255,248,235,0.05)] text-[#f4e7c3]";
-=======
-  return "border-white/10 bg-white/5 text-[#f5e7c2]";
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
 }
 
 export default function HomePage() {
@@ -63,7 +61,6 @@ export default function HomePage() {
   }, [products]);
 
   return (
-<<<<<<< HEAD
     <main className="px-4 py-8 md:px-6 md:py-10">
       <div className="mx-auto max-w-7xl">
         <section className="relative overflow-hidden rounded-[36px] border border-[rgba(223,190,86,0.18)] bg-[linear-gradient(135deg,#1c1711_0%,#241a0f_50%,#17130f_100%)] p-8 shadow-[0_20px_70px_rgba(0,0,0,0.22)] md:p-12 lg:p-14">
@@ -82,27 +79,11 @@ export default function HomePage() {
               <p className="mt-6 max-w-2xl text-base leading-7 text-[#e2cf9b] md:text-lg">
                 Decants premium de 5 ml y 10 ml para explorar fragancias árabes y de diseñador antes de elegir tu favorita.
                 Una experiencia simple, cuidada y pensada para descubrir aromas con identidad.
-=======
-    <main className="px-4 py-8 md:px-6">
-      <div className="mx-auto max-w-7xl">
-        <section className="overflow-hidden rounded-[32px] border border-[rgba(212,175,55,0.18)] bg-[linear-gradient(135deg,#121212,#1b1205)] p-8 shadow-[0_12px_30px_rgba(0,0,0,0.25)] md:p-12">
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.35em] text-[#b9962f]">
-                Experiencia premium
-              </p>
-              <h1 className="text-4xl font-bold leading-tight text-[#d4af37] md:text-6xl">
-                Descubrí tu próxima fragancia en formato decant
-              </h1>
-              <p className="mt-5 max-w-xl text-base text-[#e8d8a6] md:text-lg">
-                Elegí perfumes seleccionados en 5 ml y 10 ml, armá tu pedido online y confirmalo por WhatsApp.
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
                   href="/catalogo"
-<<<<<<< HEAD
                   className="rounded-full bg-[linear-gradient(135deg,#dfbe56_0%,#c89219_100%)] px-7 py-3.5 text-sm font-bold text-black shadow-[0_10px_25px_rgba(223,190,86,0.18)] transition hover:scale-[1.02]"
                 >
                   Explorar catálogo
@@ -111,21 +92,11 @@ export default function HomePage() {
                 <Link
                   href="/como-comprar"
                   className="rounded-full border border-[rgba(223,190,86,0.18)] bg-[rgba(255,248,235,0.05)] px-7 py-3.5 text-sm font-medium text-[#f4e7c3] transition hover:border-[rgba(223,190,86,0.30)] hover:bg-[rgba(255,248,235,0.08)]"
-=======
-                  className="rounded-full bg-[linear-gradient(135deg,#d4af37_0%,#b8860b_100%)] px-6 py-3 font-bold text-black"
-                >
-                  Ver catálogo
-                </Link>
-                <Link
-                  href="/como-comprar"
-                  className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.04)] px-6 py-3 font-medium"
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                 >
                   Cómo comprar
                 </Link>
               </div>
 
-<<<<<<< HEAD
               <div className="mt-10 grid gap-3 sm:grid-cols-3">
                 {[
                   ["5 ml y 10 ml", "Probá antes de comprar una botella completa"],
@@ -138,26 +109,11 @@ export default function HomePage() {
                   >
                     <div className="text-sm font-semibold text-[#e7c96a]">{title}</div>
                     <div className="mt-1 text-xs leading-5 text-[#e2cf9b]">{text}</div>
-=======
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                {[
-                  ["5 ml y 10 ml", "Probá antes de comprar botella completa"],
-                  ["Envíos DAC", "A todo el país"],
-                  ["Retiro", "Con coordinación en Sauce, Canelones"],
-                ].map(([title, text]) => (
-                  <div
-                    key={title}
-                    className="rounded-2xl border border-[rgba(212,175,55,0.14)] bg-[rgba(255,255,255,0.03)] p-4"
-                  >
-                    <div className="text-sm font-semibold text-[#d4af37]">{title}</div>
-                    <div className="mt-1 text-xs text-[#d8c68f]">{text}</div>
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                   </div>
                 ))}
               </div>
             </div>
 
-<<<<<<< HEAD
             <div className="grid gap-4">
               <div className="rounded-[28px] border border-[rgba(223,190,86,0.16)] bg-[rgba(255,248,235,0.05)] p-6">
                 <p className="text-xs uppercase tracking-[0.32em] text-[#bfa66a]">
@@ -188,28 +144,10 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-=======
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                ["Catálogo curado", "Perfumes árabes y de diseñador seleccionados."],
-                ["Pedido simple", "Armás tu carrito y confirmás por WhatsApp."],
-                ["Atención personalizada", "Te ayudamos a elegir según tu gusto."],
-                ["Experiencia premium", "Imagen, marca y presentación cuidadas."],
-              ].map(([title, text]) => (
-                <div
-                  key={title}
-                  className="rounded-[24px] border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] p-5"
-                >
-                  <h3 className="text-lg font-semibold text-[#d4af37]">{title}</h3>
-                  <p className="mt-2 text-sm text-[#d8c68f]">{text}</p>
-                </div>
-              ))}
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
             </div>
           </div>
         </section>
 
-<<<<<<< HEAD
         <section className="mt-14">
           <div className="mb-6 max-w-3xl">
             <p className="text-xs uppercase tracking-[0.35em] text-[#bfa66a]">
@@ -267,32 +205,13 @@ export default function HomePage() {
             <Link
               href="/catalogo"
               className="text-sm font-medium text-[#e2cf9b] transition hover:text-[#fff1c7]"
-=======
-        <section className="mt-10">
-          <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-[#b9962f]">
-                Selección destacada
-              </p>
-              <h2 className="mt-2 text-3xl font-bold text-[#d4af37]">
-                Perfumes destacados
-              </h2>
-            </div>
-            <Link
-              href="/catalogo"
-              className="text-sm text-[#d8c68f] hover:text-[#d4af37]"
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
             >
               Ver catálogo completo
             </Link>
           </div>
 
           {loading ? (
-<<<<<<< HEAD
             <div className="rounded-[24px] border border-[rgba(223,190,86,0.14)] bg-[rgba(31,24,18,0.82)] p-6 text-sm text-[#e2cf9b]">
-=======
-            <div className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(17,17,17,0.86)] p-6 text-sm text-[#d8c68f]">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
               Cargando destacados...
             </div>
           ) : (
@@ -300,20 +219,13 @@ export default function HomePage() {
               {destacados.map((p) => (
                 <article
                   key={p.id}
-<<<<<<< HEAD
                   className="group overflow-hidden rounded-[26px] border border-[rgba(223,190,86,0.18)] bg-[#1c1611] shadow-[0_14px_35px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(223,190,86,0.30)]"
                 >
                   <div className="flex h-[280px] items-center justify-center bg-[linear-gradient(180deg,#241d17,#18130f)]">
-=======
-                  className="overflow-hidden rounded-[24px] border border-[rgba(212,175,55,0.18)] bg-[#111] shadow-[0_12px_30px_rgba(0,0,0,0.22)] transition hover:-translate-y-1 hover:border-[rgba(212,175,55,0.3)]"
-                >
-                  <div className="flex h-[250px] items-center justify-center bg-[linear-gradient(180deg,#1a1a1a,#111)]">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                     {p.foto_url ? (
                       <img
                         src={p.foto_url}
                         alt={p.perfume}
-<<<<<<< HEAD
                         className="h-full w-full object-contain p-4 transition duration-300 group-hover:scale-[1.03]"
                       />
                     ) : (
@@ -322,40 +234,22 @@ export default function HomePage() {
                   </div>
 
                   <div className="p-5">
-                    <div className="mb-4 min-h-[110px]">
-                      <div className="mb-3">
+                    <div className="mb-4 min-h-[140px]">
+                      <div className="mb-3 flex flex-wrap gap-2">
                         <span
                           className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] ${badgeClass(
-=======
-                        className="h-full w-full object-contain p-3"
-                      />
-                    ) : (
-                      <span className="text-sm text-[#9d8c5c]">Sin imagen</span>
-                    )}
-                  </div>
-
-                  <div className="p-4">
-                    <div className="mb-3 min-h-[92px]">
-                      <h3
-                        className="line-clamp-2 min-h-[56px] text-lg font-semibold leading-7 text-[#d4af37]"
-                        title={p.perfume}
-                      >
-                        {p.perfume}
-                      </h3>
-                      <p className="mt-1 text-sm text-[#d8c68f]">
-                        {p.marca ?? "Sin marca"}
-                      </p>
-                      <div className="mt-2">
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${badgeClass(
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                             p.categoria
                           )}`}
                         >
                           {p.categoria ?? "Sin categoría"}
                         </span>
+
+                        {p.genero ? (
+                          <span className="inline-flex rounded-full border border-[rgba(223,190,86,0.12)] bg-[rgba(255,248,235,0.05)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-[#f4e7c3]">
+                            {p.genero}
+                          </span>
+                        ) : null}
                       </div>
-<<<<<<< HEAD
 
                       <h3
                         className="line-clamp-2 text-xl font-semibold leading-8 text-[#f4e7c3]"
@@ -367,42 +261,33 @@ export default function HomePage() {
                       <p className="mt-2 text-sm text-[#e2cf9b]">
                         {p.marca ?? "Sin marca"}
                       </p>
-=======
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
+
+                      {p.perfil ? (
+                        <div className="mt-2 inline-flex rounded-full border border-[rgba(223,190,86,0.12)] bg-[rgba(255,248,235,0.05)] px-3 py-1 text-xs text-[#bfa66a]">
+                          {p.perfil}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="grid gap-2 text-sm">
                       {p.precio_5ml ? (
-<<<<<<< HEAD
                         <div className="rounded-xl border border-[rgba(223,190,86,0.12)] bg-[rgba(255,248,235,0.05)] px-3 py-2.5 text-[#f4e7c3]">
                           5 ml:{" "}
                           <span className="font-semibold text-[#e7c96a]">
-=======
-                        <div className="rounded-xl border border-[rgba(212,175,55,0.12)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[#f5e7c2]">
-                          5 ml:{" "}
-                          <span className="font-semibold text-[#d4af37]">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                             {formatPrice(p.precio_5ml)}
                           </span>
                         </div>
                       ) : null}
 
                       {p.precio_10ml ? (
-<<<<<<< HEAD
                         <div className="rounded-xl border border-[rgba(223,190,86,0.12)] bg-[rgba(255,248,235,0.05)] px-3 py-2.5 text-[#f4e7c3]">
                           10 ml:{" "}
                           <span className="font-semibold text-[#e7c96a]">
-=======
-                        <div className="rounded-xl border border-[rgba(212,175,55,0.12)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[#f5e7c2]">
-                          10 ml:{" "}
-                          <span className="font-semibold text-[#d4af37]">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                             {formatPrice(p.precio_10ml)}
                           </span>
                         </div>
                       ) : null}
                     </div>
-<<<<<<< HEAD
 
                     <div className="mt-5">
                       <Link
@@ -412,8 +297,6 @@ export default function HomePage() {
                         Ver en catálogo
                       </Link>
                     </div>
-=======
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                   </div>
                 </article>
               ))}
@@ -421,7 +304,6 @@ export default function HomePage() {
           )}
         </section>
 
-<<<<<<< HEAD
         <section className="mt-14 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[30px] border border-[rgba(223,190,86,0.16)] bg-[linear-gradient(135deg,#221a14,#1b140f)] p-8">
             <p className="text-xs uppercase tracking-[0.35em] text-[#bfa66a]">
@@ -480,38 +362,6 @@ export default function HomePage() {
               </p>
             </Link>
           </div>
-=======
-        <section className="mt-10 grid gap-5 md:grid-cols-3">
-          <Link
-            href="/catalogo"
-            className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(17,17,17,0.86)] p-6 transition hover:-translate-y-1"
-          >
-            <h2 className="text-2xl font-bold text-[#d4af37]">Catálogo</h2>
-            <p className="mt-2 text-sm text-[#d8c68f]">
-              Explorá perfumes, filtrá por marca o categoría y armá tu pedido.
-            </p>
-          </Link>
-
-          <Link
-            href="/envios"
-            className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(17,17,17,0.86)] p-6 transition hover:-translate-y-1"
-          >
-            <h2 className="text-2xl font-bold text-[#d4af37]">Envíos</h2>
-            <p className="mt-2 text-sm text-[#d8c68f]">
-              Enviamos a todo el país por DAC y coordinamos retiros en Sauce.
-            </p>
-          </Link>
-
-          <Link
-            href="/como-comprar"
-            className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(17,17,17,0.86)] p-6 transition hover:-translate-y-1"
-          >
-            <h2 className="text-2xl font-bold text-[#d4af37]">Cómo comprar</h2>
-            <p className="mt-2 text-sm text-[#d8c68f]">
-              Conocé el proceso paso a paso para hacer tu pedido.
-            </p>
-          </Link>
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
         </section>
       </div>
     </main>

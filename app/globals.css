@@ -1,19 +1,10 @@
 @import "tailwindcss";
 
-<<<<<<< HEAD
-=======
-:root {
-  --background: #050505;
-  --foreground: #f5e7c2;
-}
-
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
 html {
   scroll-behavior: smooth;
 }
 
 body {
-<<<<<<< HEAD
   background: #14110d;
   color: #f4e7c3;
 }
@@ -35,6 +26,7 @@ body {
   background: linear-gradient(180deg, #dfbe56, #c89219);
   border-radius: 999px;
 }
+
 .input-premium {
   width: 100%;
   border-radius: 1rem;
@@ -52,13 +44,4 @@ body {
 
 .input-premium:focus {
   border-color: #dfbe56;
-=======
-  background:
-    radial-gradient(circle at top, #1a1408 0%, #0b0b0b 35%, #050505 100%);
-  color: var(--foreground);
-}
-
-* {
-  box-sizing: border-box;
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
 }

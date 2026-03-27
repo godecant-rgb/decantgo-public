@@ -48,35 +48,12 @@ function statusBadge(status: string) {
 }
 
 export default function SociosDashboardPage() {
-<<<<<<< HEAD
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [items, setItems] = useState<OrderItemRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-=======
-  const [user, setUser] = useState("");
-  const [authorized, setAuthorized] = useState(false);
-  const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [items, setItems] = useState<OrderItemRow[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const auth = localStorage.getItem("dg_socios_auth");
-    const savedUser = localStorage.getItem("dg_socios_user") || "";
-    if (auth !== "ok") {
-      window.location.href = "/socios/login";
-      return;
-    }
-    setUser(savedUser);
-    setAuthorized(true);
-  }, []);
-
-  useEffect(() => {
-    if (!authorized) return;
-
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
     async function loadData() {
       setLoading(true);
       const supabase = createClient();
@@ -95,7 +72,6 @@ export default function SociosDashboardPage() {
     }
 
     loadData();
-<<<<<<< HEAD
   }, []);
 
   async function logout() {
@@ -108,14 +84,6 @@ export default function SociosDashboardPage() {
     } catch {
       window.location.href = "/socios/login";
     }
-=======
-  }, [authorized]);
-
-  function logout() {
-    localStorage.removeItem("dg_socios_auth");
-    localStorage.removeItem("dg_socios_user");
-    window.location.href = "/socios/login";
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
   }
 
   const metrics = useMemo(() => {
@@ -177,11 +145,6 @@ export default function SociosDashboardPage() {
     return list.slice(0, 4);
   }, [orders]);
 
-<<<<<<< HEAD
-=======
-  if (!authorized) return null;
-
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
   return (
     <main className="px-4 py-8 md:px-6">
       <div className="mx-auto max-w-7xl">
@@ -190,13 +153,9 @@ export default function SociosDashboardPage() {
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-[#b9962f]">Panel privado</p>
               <h1 className="mt-2 text-4xl font-bold text-[#d4af37]">Dashboard socios</h1>
-<<<<<<< HEAD
               <p className="mt-2 text-sm text-[#d8c68f]">
                 Resumen general del negocio y accesos rápidos de gestión.
               </p>
-=======
-              <p className="mt-2 text-sm text-[#d8c68f]">Bienvenido{user ? `, ${user}` : ""}. Resumen general del negocio.</p>
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -208,16 +167,10 @@ export default function SociosDashboardPage() {
               </button>
               <button
                 onClick={logout}
-<<<<<<< HEAD
                 disabled={loggingOut}
                 className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm disabled:opacity-60"
               >
                 {loggingOut ? "Cerrando..." : "Cerrar sesión"}
-=======
-                className="rounded-full border border-[rgba(212,175,55,0.16)] bg-[rgba(255,255,255,0.03)] px-5 py-3 text-sm"
-              >
-                Cerrar sesión
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
               </button>
             </div>
           </div>
@@ -233,37 +186,26 @@ export default function SociosDashboardPage() {
                   ["Clientes", String(metrics.clientsCount)],
                   ["Pedidos entregados", String(metrics.deliveredCount)],
                 ].map(([title, value]) => (
-<<<<<<< HEAD
                   <div
                     key={title}
                     className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(255,255,255,0.03)] p-5"
                   >
-=======
-                  <div key={title} className="rounded-[24px] border border-[rgba(212,175,55,0.14)] bg-[rgba(255,255,255,0.03)] p-5">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                     <div className="text-sm text-[#d8c68f]">{title}</div>
                     <div className="mt-2 text-3xl font-bold text-[#d4af37]">{value}</div>
                   </div>
                 ))}
               </div>
 
-<<<<<<< HEAD
               <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-8">
-=======
-              <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                 {[
                   ["Pedidos", "Ver pedidos que llegan desde la web y actualizar su estado.", "/socios/pedidos"],
                   ["Clientes", "Consolidado de clientes, historial y total gastado.", "/socios/clientes"],
                   ["Analytics", "Ventas, top perfumes, top clientes y métricas clave.", "/socios/analytics"],
                   ["Finanzas", "Control entre socios, gastos y resultados del negocio.", "/socios/finanzas"],
                   ["Envíos", "Preparar pedidos, generar etiqueta y despachar.", "/socios/envios"],
-<<<<<<< HEAD
                   ["Compras", "Cargar nuevas botellas y actualizar automáticamente catálogo y ml.", "/socios/compras"],
                   ["Stock", "Ver ml disponibles, costo de referencia y costo por ml.", "/socios/stock"],
                   ["Cupones", "Crear promociones y descuentos para campañas y clientes.", "/socios/cupones"],
-=======
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                 ].map(([title, text, href]) => (
                   <Link
                     key={title}
@@ -290,14 +232,10 @@ export default function SociosDashboardPage() {
                       <div className="text-sm text-[#d8c68f]">Todavía no hay pedidos.</div>
                     ) : (
                       latestOrders.map((o) => (
-<<<<<<< HEAD
                         <div
                           key={o.id}
                           className="rounded-2xl border border-[rgba(212,175,55,0.10)] bg-[rgba(0,0,0,0.18)] p-4"
                         >
-=======
-                        <div key={o.id} className="rounded-2xl border border-[rgba(212,175,55,0.10)] bg-[rgba(0,0,0,0.18)] p-4">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                             <div>
                               <div className="font-medium text-[#f5e7c2]">{o.order_number}</div>
@@ -305,13 +243,9 @@ export default function SociosDashboardPage() {
                               <div className="mt-1 text-xs text-[#cdbb7a]">{formatDate(o.created_at)}</div>
                             </div>
                             <div className="flex flex-col items-start gap-2 md:items-end">
-<<<<<<< HEAD
                               <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadge(o.status)}`}>
                                 {o.status}
                               </span>
-=======
-                              <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadge(o.status)}`}>{o.status}</span>
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                               <div className="text-sm font-semibold text-[#d4af37]">{formatMoney(o.total)}</div>
                             </div>
                           </div>
@@ -326,14 +260,10 @@ export default function SociosDashboardPage() {
                     <h2 className="text-2xl font-bold text-[#d4af37]">Alertas</h2>
                     <div className="mt-4 grid gap-3">
                       {alerts.map((a) => (
-<<<<<<< HEAD
                         <div
                           key={a.title}
                           className="rounded-2xl border border-[rgba(212,175,55,0.10)] bg-[rgba(0,0,0,0.18)] p-4"
                         >
-=======
-                        <div key={a.title} className="rounded-2xl border border-[rgba(212,175,55,0.10)] bg-[rgba(0,0,0,0.18)] p-4">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                           <div className="font-medium text-[#f5e7c2]">{a.title}</div>
                           <div className="mt-1 text-sm text-[#d8c68f]">{a.text}</div>
                         </div>
@@ -348,25 +278,17 @@ export default function SociosDashboardPage() {
                         <div className="text-sm text-[#d8c68f]">Todavía no hay datos de perfumes.</div>
                       ) : (
                         topPerfumes.map((p) => (
-<<<<<<< HEAD
                           <div
                             key={p.name}
                             className="flex items-center justify-between rounded-2xl border border-[rgba(212,175,55,0.10)] bg-[rgba(0,0,0,0.18)] p-3"
                           >
-=======
-                          <div key={p.name} className="flex items-center justify-between rounded-2xl border border-[rgba(212,175,55,0.10)] bg-[rgba(0,0,0,0.18)] p-3">
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                             <div>
                               <div className="font-medium text-[#f5e7c2]">{p.name}</div>
                               <div className="text-sm text-[#d8c68f]">{p.qty} unidad(es)</div>
                             </div>
-<<<<<<< HEAD
                             <div className="text-sm font-semibold text-[#d4af37]">
                               {formatMoney(p.amount)}
                             </div>
-=======
-                            <div className="text-sm font-semibold text-[#d4af37]">{formatMoney(p.amount)}</div>
->>>>>>> cd795624ad4486ee904a3afcdd22490201e4f2b3
                           </div>
                         ))
                       )}
