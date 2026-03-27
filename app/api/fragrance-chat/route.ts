@@ -2,11 +2,6 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 type PerfumeRow = {
   id: string;
   perfume: string;
@@ -87,12 +82,26 @@ export async function POST(req: Request) {
       );
     }
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ??
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json(
+        { error: "Faltan variables de entorno de Supabase." },
+        { status: 500 }
+      );
+    }
+
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "Falta OPENAI_API_KEY en el entorno." },
         { status: 500 }
       );
     }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
