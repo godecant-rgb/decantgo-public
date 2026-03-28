@@ -33,6 +33,7 @@ export default function SociosLoginPage() {
         throw new Error(data?.error || "No se pudo iniciar sesión.");
       }
 
+      localStorage.setItem("dg_socios_auth", "ok");
       router.push("/socios/dashboard");
       router.refresh();
     } catch (error: any) {
