@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   clearCart,
   getCart,
@@ -23,8 +24,11 @@ type AppliedCoupon = {
 };
 
 export default function CarritoPage() {
+  const router = useRouter();
+
   const [items, setItems] = useState<CartItem[]>([]);
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -171,10 +175,18 @@ export default function CarritoPage() {
     setCouponMessage("Cupón removido.");
   }
 
-  function buildWhatsAppMessage() {
+  function buildWhatsAppMessage(orderNumber?: string) {
     const lines = [
       "Hola, quiero confirmar este pedido de Decant Go:",
       "",
+    ];
+
+    if (orderNumber) {
+      lines.push(`Número de pedido: ${orderNumber}`);
+      lines.push("");
+    }
+
+    lines.push(
       ...items.map((item, index) => {
         const name = item.product.perfume;
         const ml = item.presentacion;
@@ -182,10 +194,11 @@ export default function CarritoPage() {
         const subtotalLine =
           Number(item.precio ?? 0) * Number(item.cantidad ?? 0);
         return `${index + 1}. ${name} - ${ml} x${qty} — ${formatPrice(subtotalLine)}`;
-      }),
-      "",
-      `Subtotal: ${formatPrice(subtotal)}`,
-    ];
+      })
+    );
+
+    lines.push("");
+    lines.push(`Subtotal: ${formatPrice(subtotal)}`);
 
     if (appliedCoupon) {
       lines.push(`Cupón aplicado: ${appliedCoupon.code}`);
@@ -205,7 +218,85 @@ export default function CarritoPage() {
     return encodeURIComponent(lines.join("\n"));
   }
 
-  const whatsappHref = `https://wa.me/59895507692?text=${buildWhatsAppMessage()}`;
+  async function handleCheckout() {
+    if (items.length === 0) {
+      setMessage("Tu carrito está vacío.");
+      return;
+    }
+
+    if (!customerName.trim()) {
+      setMessage("Ingresa tu nombre.");
+      return;
+    }
+
+    if (!customerPhone.trim()) {
+      setMessage("Ingresa tu teléfono.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setMessage("");
+
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName,
+          customerPhone,
+          customerCity,
+          customerAddress,
+          customerNotes,
+          subtotal,
+          discountAmount,
+          totalFinal,
+          couponCode: appliedCoupon?.code ?? null,
+          items,
+        }),
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const raw = await res.text();
+        throw new Error(raw || "La API de checkout no devolvió JSON.");
+      }
+
+      if (!res.ok) {
+        throw new Error(
+          data?.error ||
+            data?.detail ||
+            "No se pudo crear el pedido."
+        );
+      }
+
+      const whatsappUrl = `https://wa.me/59895507692?text=${buildWhatsAppMessage(
+        data?.orderNumber
+      )}`;
+
+      clearCart();
+      setItems([]);
+      setAppliedCoupon(null);
+      setDiscountAmount(0);
+      setCouponCode("");
+
+      setMessage(
+        `Pedido ${data?.orderNumber ?? ""} creado correctamente.`
+      );
+
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      router.refresh();
+    } catch (error: any) {
+      setMessage(error?.message || "No se pudo confirmar el pedido.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-transparent px-4 py-8 text-[#f4e7c3] md:px-6 md:py-10">
@@ -222,7 +313,7 @@ export default function CarritoPage() {
                 Tu carrito
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[#e2cf9b] md:text-base">
-                Revisá tu selección, completá tus datos y confirmá tu pedido por WhatsApp.
+                Revisá tu selección, completá tus datos y confirmá tu pedido.
               </p>
             </div>
 
@@ -456,7 +547,7 @@ export default function CarritoPage() {
                 Confirmar pedido
               </h2>
               <p className="mt-3 text-sm leading-7 text-[#e2cf9b]">
-                Aplicá un cupón si tenés uno y enviá el pedido por WhatsApp.
+                Aplicá un cupón si tenés uno y luego confirmá tu pedido.
               </p>
 
               <div className="mt-6 rounded-2xl border border-[rgba(223,190,86,0.12)] bg-[rgba(255,248,235,0.05)] p-4">
@@ -526,14 +617,13 @@ export default function CarritoPage() {
               </div>
 
               <div className="mt-6 grid gap-3">
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full bg-[linear-gradient(135deg,#dfbe56_0%,#c89219_100%)] px-5 py-3 text-sm font-bold text-black shadow-[0_12px_28px_rgba(223,190,86,0.16)] transition hover:scale-[1.02]"
+                <button
+                  onClick={handleCheckout}
+                  disabled={submitting}
+                  className="inline-flex items-center justify-center rounded-full bg-[linear-gradient(135deg,#dfbe56_0%,#c89219_100%)] px-5 py-3 text-sm font-bold text-black shadow-[0_12px_28px_rgba(223,190,86,0.16)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Confirmar por WhatsApp
-                </a>
+                  {submitting ? "Confirmando..." : "Confirmar pedido"}
+                </button>
 
                 <button
                   onClick={handleClearCart}
