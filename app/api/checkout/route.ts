@@ -6,7 +6,7 @@ type CheckoutItem = {
     id: string;
     perfume: string;
   };
-  presentacion: "5ml" | "10ml";
+  presentacion: "5ml" | "10ml" | string;
   cantidad: number;
   precio: number;
 };
@@ -36,6 +36,15 @@ function makeOrderNumber() {
   const d = String(now.getDate()).padStart(2, "0");
   const rand = Math.floor(1000 + Math.random() * 9000);
   return `DG-${y}${m}${d}-${rand}`;
+}
+
+function getMlFromPresentacion(value: string) {
+  const txt = String(value ?? "").toLowerCase().trim();
+
+  if (txt.includes("10")) return 10;
+  if (txt.includes("5")) return 5;
+
+  return 0;
 }
 
 export async function POST(req: Request) {
@@ -170,6 +179,54 @@ export async function POST(req: Request) {
         },
         { status: 500 }
       );
+    }
+
+    // Descontar ml disponibles del stock vendido
+    for (const item of items) {
+      const productId = String(item?.product?.id ?? "").trim();
+      const cantidad = Number(item?.cantidad ?? 0);
+      const mlPorUnidad = getMlFromPresentacion(String(item?.presentacion ?? ""));
+      const mlAVender = cantidad * mlPorUnidad;
+
+      if (!productId || mlAVender <= 0) continue;
+
+      const { data: productRow, error: productReadError } = await supabase
+        .from("public_products")
+        .select("id, ml_disponible")
+        .eq("id", productId)
+        .single();
+
+      if (productReadError) {
+        return NextResponse.json(
+          {
+            error: "No se pudo leer el stock del producto.",
+            detail: productReadError.message,
+            where: "public_products.read",
+            productId,
+          },
+          { status: 500 }
+        );
+      }
+
+      const mlActual = Number(productRow?.ml_disponible ?? 0);
+      const nuevoMlDisponible = Math.max(0, mlActual - mlAVender);
+
+      const { error: productUpdateError } = await supabase
+        .from("public_products")
+        .update({ ml_disponible: nuevoMlDisponible })
+        .eq("id", productId);
+
+      if (productUpdateError) {
+        return NextResponse.json(
+          {
+            error: "No se pudo actualizar el stock del producto.",
+            detail: productUpdateError.message,
+            where: "public_products.update",
+            productId,
+          },
+          { status: 500 }
+        );
+      }
     }
 
     const shippingPayload = {
